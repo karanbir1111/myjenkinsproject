@@ -1,0 +1,2 @@
+# Pinning the Flask version is a good practice for reproducible builds
+Flask==3.0.0
