@@ -21,8 +21,20 @@ pipeline {
         }
     }
     post {
-        always {
-            sh 'docker logout'
-        }
+        success {
+        echo "Build ${BUILD_NUMBER} succeeded!"
+        // send Slack or email notification here
+    }
+    failure {
+        echo "Build ${BUILD_NUMBER} FAILED. Check logs."
+        // alert the team here
+    }
+    always {
+        sh 'docker logout'
+        // clean up temp files, always runs
+    }
+    unstable {
+        echo "Tests passed with warnings"
+    }
     }
 }
