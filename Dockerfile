@@ -1,32 +1,28 @@
-# Stage 1: Builder
+# Stage 1: Builder (slim for build tools)
 FROM python:3.9-slim as builder
 
-WORKDIR /app
-
-# Copy requirements and install dependencies to a virtual environment
+WORKDIR /build
 COPY requirements.txt .
-RUN python -m venv /opt/venv
-ENV PATH="/opt/venv/bin:$PATH"
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --user --no-cache-dir -r requirements.txt
 
-# Stage 2: Runtime
-FROM python:3.9-slim
+# Stage 2: Runtime (Alpine for minimal size)
+FROM python:3.9-alpine
 
 WORKDIR /app
 
-# Copy only the virtual environment from builder
-COPY --from=builder /opt/venv /opt/venv
+# Copy only installed packages from builder
+COPY --from=builder /root/.local /root/.local
 
-# Set environment to use the virtual environment
-ENV PATH="/opt/venv/bin:$PATH" \
+# Set environment variables
+ENV PATH=/root/.local/bin:$PATH \
     PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1
 
-# Copy the application code
-COPY . .
+# Copy application code
+COPY app.py .
 
-# Expose the port the app runs on
+# Expose port
 EXPOSE 5000
 
-# Command to run the application
+# Run application
 CMD ["python", "app.py"]
